@@ -12,22 +12,19 @@ The technologies currently used in this project include:
 
 ## Planned Vision
 
-STRUCT was designed with a much larger technical scope in mind.
+STRUCT was originally envisioned as a modern clothing e-commerce platform with a strong focus on design, storytelling, and user experience.
 
 The long-term vision included:
 
 * React Three Fiber
 * React Three Drei
 * WebGL-powered effects
-* Advanced GSAP animation systems
-* Smooth scrolling experiences
-* Interactive 3D environments
-* High-fidelity page transitions
-* 3D model integration
-* Cinematic storytelling through motion design
-* Custom interactive experiences inspired by modern creative development
+* GSAP-driven animations
+* Smooth storytelling experiences
+* Server-side rendered product pages
+* Billing and e-commerce functionality
 
-The ultimate goal was to create a visually rich and technically ambitious website that could stand alongside the level of work commonly featured on Awwwards.
+The goal was to create a visually rich and technically ambitious website that could stand alongside the level of work commonly featured on Awwwards.
 
 ## Project Status: **On Hold**
 
