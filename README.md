@@ -37,7 +37,7 @@ This repository remains available as a snapshot of my learning journey and the p
 ## Note:
 
 * This project is not actively maintained.
-* Features may be incomplete.
+* Features are incomplete.
 * Issues and pull requests may not receive responses.
 * The codebase may change significantly if development resumes in the future.
 
