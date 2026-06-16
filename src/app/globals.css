@@ -6,6 +6,11 @@ html, body, #root {
   padding: 0;
 }
 
+.team-char {
+  display: inline-block;
+  will-change: transform;
+}
+
 @theme {
   --font-monument: var(--font-monument);
   --font-bitcount: var(--font-bitcount);

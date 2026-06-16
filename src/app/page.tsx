@@ -1,22 +1,13 @@
-"use client";
-
-import { useEffect } from "react";
-import StructIntro from "@/components/structIntro";
-import { data } from "@/components/data";
-import { useIntroStore } from "@/store/introStore";
+import FormFollows from "@/components/FormFollows.jsx";
+import Intro from "@/components/Mainintro.jsx";
+import ZoomReveal from "@/components/dropreveal";
 
 export default function Home() {
-  const setShowMenu = useIntroStore((s) => s.setShowMenu);
-
-  // 🔥 Hide menu when entering home page
-  useEffect(() => {
-    setShowMenu(false);
-  }, [setShowMenu]);
-
   return (
-    <StructIntro
-      items={data}
-      onMenuReveal={() => setShowMenu(true)}
-    />
+    <div className="flex flex-col items-center min-h-screen">
+      <Intro />
+      <FormFollows />
+      <ZoomReveal />      
+    </div>
   );
 }

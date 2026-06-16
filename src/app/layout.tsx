@@ -1,7 +1,6 @@
 import localFont from 'next/font/local';
 import { Space_Mono } from 'next/font/google';
 import './globals.css';
-import StaggeredMenu from '@/components/menu';
 
 const spaceMono = Space_Mono({
   weight: ['400', '700'], 
@@ -31,7 +30,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${bitcount.variable} ${monument.variable} ${spaceMono.variable}`}>
-<StaggeredMenu />
         {children}
       </body>
     </html>
