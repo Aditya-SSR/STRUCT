@@ -1,5 +1,12 @@
 ### STRUCT
 
+## Project Status: **On Hold**
+
+Development on STRUCT has been paused indefinitely.
+
+At the moment, I have no immediate plans to continue working on this project as my focus has shifted toward other learning goals and projects. While I may return to STRUCT in the future, there is currently no active roadmap or timeline for further development.
+
+This repository remains available as a snapshot of my learning journey and the progress made while experimenting with Next.js and TypeScript.
 ## Current Tech Stack
 
 The technologies currently used in this project include:
@@ -26,13 +33,6 @@ The long-term vision included:
 
 The goal was to create a visually rich and technically ambitious website that could stand alongside the level of work commonly featured on Awwwards.
 
-## Project Status: **On Hold**
-
-Development on STRUCT has been paused indefinitely.
-
-At the moment, I have no immediate plans to continue working on this project as my focus has shifted toward other learning goals and projects. While I may return to STRUCT in the future, there is currently no active roadmap or timeline for further development.
-
-This repository remains available as a snapshot of my learning journey and the progress made while experimenting with Next.js and TypeScript.
 
 ## Note:
 
