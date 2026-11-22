@@ -11,7 +11,11 @@ const WORD = "font-display uppercase leading-[0.9] tracking-[-0.04em] whitespace
 const LINE = `${WORD} block`;
 const HOLD = 0.8; // the statement rests before the dive begins
 const DIVE = 6; // duration of the zoom
-const OPEN_AT = HOLD + DIVE + 0.8; // timeline time at which the dot-matrix SUIT-01 begins to resolve
+const OPEN_AT = HOLD + DIVE + 1; // timeline time at which the dot-matrix SUIT-01 begins to resolve (the ink circle is already opening)
+// Monument Extended "0" (measured from the font): the left stroke centre sits at 14.5% of the glyph box width and is
+// 21.3% thick. The dive ends INSIDE that stroke, so the whole screen is solid ink and the circle that follows is invisible.
+const STROKE_X = 0.145;
+const STROKE_T = 0.213;
 const CLOSE_AT = OPEN_AT - 1.2;
 
 /**
@@ -55,17 +59,36 @@ export default function DropReveal() {
         const geo = () => {
           const cx = w.offsetWidth / 2;
           const cy = w.offsetHeight / 2;
-          const ox = line.offsetLeft + o.offsetLeft + o.offsetWidth / 2;
-          const oy = line.offsetTop + o.offsetTop + o.offsetHeight / 2;
-          const S = (Math.hypot(plate.clientWidth, plate.clientHeight) / (o.offsetWidth * 0.4)) * 1.06; // the zero's counter ~ 40% of the glyph
+          // the camera falls INTO the zero's black stroke (not through its hole): when the dive ends the screen is
+          // entirely inside solid ink, so nothing white is left to cut away from.
+          // where the zero's stroke is, in the zooming wrapper's own (unscaled) coordinates. Measured from the RENDERED
+          // rects and divided by the wrapper's current scale, so it is right at any scroll position and however deeply
+          // the glyph is nested (the text-reveal wraps characters in extra boxes).
+          const wr = w.getBoundingClientRect();
+          const s0 = wr.width / w.offsetWidth || 1;
+          // The zero must be located in the VISIBLE word. That word is split into per-character boxes by the text-reveal,
+          // which drops kerning, so its zero sits ~15px away from the zero of the unsplit invisible twin (`o`). Aiming at
+          // the twin lands on the stroke's outer edge (white on one side). Fall back to the twin until the split exists.
+          const shown = line.querySelector("p");
+          const zero = shown ? Array.from(shown.querySelectorAll<HTMLElement>("*")).find((e) => e.children.length === 0 && e.textContent === "0") : undefined;
+          const or = (zero ?? o).getBoundingClientRect();
+          const ox = (or.left + or.width * STROKE_X - wr.left) / s0;
+          const oy = (or.top + or.height / 2 - wr.top) / s0;
+          const S = (Math.hypot(plate.clientWidth, plate.clientHeight) / (o.offsetWidth * STROKE_T)) * 1.12; // stroke thickness x S covers the screen diagonal
           const tx = plate.clientWidth / 2 - (w.offsetLeft + cx);
           const ty = plate.clientHeight / 2 - (w.offsetTop + cy);
           return { S, x: tx - S * (ox - cx), y: ty - S * (oy - cy) };
         };
+        // The measurement is cached and RE-TAKEN every time the playhead rests before the dive (the wrapper is at identity
+        // there). The statement's text-reveal splits its characters lazily, which shifts the zero ~15px; a measurement taken at
+        // setup (or during a ScrollTrigger refresh) is stale by then and lands on the stroke's edge instead of inside it.
+        let g = geo();
+        const dive = { p: 0 };
         const tl: gsap.core.Timeline = gsap.timeline({
           defaults: { ease: "none" },
           onUpdate: () => {
             const t = tl.time();
+            if (t < HOLD) g = geo();
             if (t >= OPEN_AT) setOpen(true);
             else if (t < CLOSE_AT) setOpen(false);
           },
@@ -80,14 +103,22 @@ export default function DropReveal() {
           },
         });
 
+        // x, y and scale all follow the same eased progress, so the zero's stroke travels in a straight line to screen centre
         tl.fromTo(
-          w,
-          { x: 0, y: 0, scale: 1 },
-          { x: () => geo().x, y: () => geo().y, scale: () => geo().S, duration: DIVE, ease: "power3.in" },
+          dive,
+          { p: 0 },
+          {
+            p: 1,
+            duration: DIVE,
+            ease: "power3.in",
+            immediateRender: false,
+            onUpdate: () => gsap.set(w, { x: g.x * dive.p, y: g.y * dive.p, scale: 1 + (g.S - 1) * dive.p }),
+          },
           HOLD,
         );
-        tl.fromTo(ink.current, { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(76% at 50% 50%)", duration: 4, ease: "power2.inOut" }, HOLD + 3);
-        tl.set(w, { visibility: "hidden" }, HOLD + DIVE + 0.6);
+        // the ink circle starts only once the dive has finished (the screen is already solid ink, so it is invisible)
+        tl.fromTo(ink.current, { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(76% at 50% 50%)", duration: 2.6, ease: "power2.inOut" }, HOLD + DIVE);
+        tl.set(w, { visibility: "hidden" }, HOLD + DIVE + 2.6);
         const n = { v: 0 };
         tl.to(
           n,

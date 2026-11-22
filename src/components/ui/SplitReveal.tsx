@@ -85,6 +85,9 @@ export default function SplitReveal({
           mask: useResolve ? undefined : "lines",
           autoSplit: true,
           onSplit(self) {
+            // We own the timeline's lifecycle (we deliberately do NOT return it to SplitText: on a re-split it would
+            // restore the NEW paused timeline to the OLD playhead and leave it frozen at ~99.9%, with glyphs stuck).
+            state.tl?.kill();
             cleanup?.();
             gsap.set(el, { visibility: "visible" });
             let tl: gsap.core.Animation;
@@ -103,9 +106,9 @@ export default function SplitReveal({
               state.playing = true;
               tl.play();
             }
-            return tl;
           },
           onRevert() {
+            state.tl?.kill();
             cleanup?.();
           },
         });

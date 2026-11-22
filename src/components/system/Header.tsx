@@ -21,7 +21,7 @@ export default function Header() {
   return (
     <header
       id="site-header"
-      className="pad-x fixed inset-x-0 top-0 z-[70] grid h-[var(--header-h)] grid-cols-[1fr_auto] items-center text-paper mix-blend-difference md:grid-cols-[1fr_auto_1fr]"
+      className="pad-x fixed inset-x-0 top-0 z-[70] grid h-[var(--header-h)] grid-cols-[1fr_auto] items-center text-paper mix-blend-difference [html[data-header-photo]_&]:mix-blend-normal md:grid-cols-[1fr_auto_1fr]"
     >
       <TransitionLink
         href="/"
