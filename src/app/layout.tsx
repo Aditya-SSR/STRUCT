@@ -10,6 +10,7 @@ import Menu from "@/components/system/Menu";
 import PageTransition from "@/components/system/PageTransition";
 import Footer from "@/components/system/Footer";
 import CartDrawer from "@/components/shop/CartDrawer";
+import MobileNotice from "@/components/system/MobileNotice";
 
 /*
  * STACKING ORDER (z-index) — highest first. Keep new layers inside this scale.
@@ -18,6 +19,7 @@ import CartDrawer from "@/components/shop/CartDrawer";
  *   100  Preloader         (ASSEMBLY, split panel)
  *    90  PageTransition    (5 ink strips: covers header, menu and cart)
  *    80  CartDrawer        (shop agent; above header and menu)
+ *    75  MobileNotice      (phones only: "better on a larger screen" bottom notice)
  *    70  Header            (fixed, mix-blend-difference; stays above the menu so MENU/CLOSE is always reachable)
  *    60  Menu              (full-page drop-down panel)
  *  <60   page content (sections may use 0–50)
@@ -89,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main" tabIndex={-1} className="outline-none">{children}</main>
         </PageTransition>
         <Footer />
+        <MobileNotice />
       </body>
     </html>
   );
