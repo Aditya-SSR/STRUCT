@@ -1,38 +1,52 @@
 # STRUCT
 
-> **FORM FOLLOWS FUNCTION.** A fictional Tokyo clothing studio that builds garments like structures.
-> DROP-01 — SUIT-01 — 400 units, sold whole. A design project: the people, places and numbers are invented, the imagery is AI-generated, and the shop never takes payment.
+![STRUCT home page](docs/screenshot.png)
 
-Rebuilt from scratch (the original STRUCT repo history is preserved in git).
+## About
 
-## Run
+STRUCT is a fictional clothing studio based in Tokyo, with studios in Osaka, Seoul, Singapore, London, Paris, New York and Los Angeles. Its tagline is **Form follows function**.
 
-```bash
-npm install
-npm run dev      # http://localhost:3000
-npm run build    # production build (all routes prerender statically)
-```
+The studio was founded in 2019 by four people from four different disciplines (architecture, pattern cutting, textiles and type) who quit design jobs in the same week. They disliked design that decorates, so they built their own method: draw only where the load travels, and cut everything that does not carry. They call it Kozo, the Japanese word for structure.
+
+The brand sells in two ways:
+
+- **DROP-01** is a drop of eight individual garments, 100 units each, released once and never restocked.
+- **SUIT-01** is a separate product: a full black or white suit (coat, tunic, trouser and belt) that is sold whole, never as separate parts, in men's and women's cuts.
+
+This is a design project. The brand, people, places and numbers are invented, the imagery is AI-generated, and the shop takes no payment and ships nothing.
 
 ## Pages
 
-| Route | What it is |
+| Route | Description |
 |---|---|
-| `/` | Preloader → hero → manifesto → FORM / FOLLOWS / FUNCTION → method → origin & field studies → nodes globe → drop zoom → **SUIT-01 reveal** → footer |
-| `/drop-01`, `/drop-01/[slug]` | **DROP-01** — the eight garments (OBJ.01–OBJ.08), 800 units, product cards + quick add |
-| `/suit-01`, `/suit-01/[slug]` | **SUIT-01** — the whole-body suit, sold whole (4 SKUs: men/women × noir/blanc), 400 units |
-| `/people` | The four co-founders (dot-matrix portraits that resolve to photographs), studio rules, crew, nodes |
+| `/` | Preloader, hero, principles, method, journey, DROP-01 garments, nodes globe and the SUIT-01 reveal |
+| `/drop-01` | The eight garments, with filters, quick add and product pages |
+| `/suit-01` | The whole-body suit in four variants, with product pages |
+| `/people` | The four founders, studio rules and crew |
 
-## Where things live
+## Tech stack
 
-- `docs/BRAND.md` — the story, the people, the nodes, the identity (colour, type, motion, voice). **Start here.**
-- `docs/ARCHITECTURE.md` — stack rules and the contracts between parts of the codebase.
-- `docs/CREDITS.md` — libraries and licences.
-- `src/data/` — all copy and product data (`brand.ts`, `products.ts`).
-- `src/lib/resolveText.ts` + `src/components/ui/SplitReveal.tsx` — the signature **RESOLVE** text reveal. Every text reveal on the site uses it.
-- `src/components/system/` — preloader, header, full-page drop-down menu, cursor, page transitions, footer.
-- `src/components/three/` — procedural 3D (hero cluster, Möbius load ribbon, object stage) and the cobe globe.
-- `public/img/` — processed photography (`manifest.json` lists sizes).
+- Next.js 16 (App Router) with React 19 and TypeScript
+- Tailwind CSS 4
+- GSAP (ScrollTrigger, SplitText, Flip) for animation
+- Lenis for smooth scrolling
+- three.js, React Three Fiber and drei for the 3D scenes
+- cobe for the dotted globe
+- Zustand for the bag and UI state
+- Fonts: Monument Extended, Bitcount and Space Mono
 
-## Identity in one breath
+## Running locally
 
-Ink `#0A0A0A`, paper `#F3F4F2`, one signal colour `#FF5A00` used sparingly. Monument Extended for display, Bitcount (dot matrix) for numbers, Space Mono for everything else. Zero radius, hairlines, load lines that draw themselves.
+```bash
+npm install
+npm run dev
+```
+
+Then open http://localhost:3000. To check a production build, run `npm run build`.
+
+## Project notes
+
+- `docs/BRAND.md` covers the story, identity, colours, type and motion.
+- `docs/CHANGE-02.md` explains how DROP-01 and SUIT-01 differ.
+- `docs/ARCHITECTURE.md` describes how the code is organised.
+- `docs/CREDITS.md` lists libraries and licences.
