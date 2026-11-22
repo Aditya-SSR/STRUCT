@@ -1,18 +1,100 @@
 @import "tailwindcss";
 
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+/* ───────────────────────── STRUCT design tokens ───────────────────────── */
+:root {
+  --ink: #0a0a0a;
+  --paper: #f3f4f2;
+  --bone: #e6e8e6;
+  --ash: #b9bebf;
+  --smoke: #6c7274;
+  --signal: #ff5a00;
+
+  --margin: 32px;
+  --gutter: 24px;
+  --header-h: 72px;
+}
+@media (max-width: 767px) {
+  :root { --margin: 16px; --gutter: 16px; --header-h: 60px; }
 }
 
-.team-char {
-  display: inline-block;
-  will-change: transform;
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-bone: var(--bone);
+  --color-ash: var(--ash);
+  --color-smoke: var(--smoke);
+  --color-signal: var(--signal);
+
+  --font-display: var(--font-monument), "Arial Black", sans-serif;
+  --font-dots: var(--font-bitcount), ui-monospace, monospace;
+  --font-mono: var(--font-space-mono), ui-monospace, monospace;
+  --font-sans: var(--font-space-mono), ui-monospace, monospace;
+
+  --ease-resolve: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-@theme {
-  --font-monument: var(--font-monument);
-  --font-bitcount: var(--font-bitcount);
-  --font-mono: var(--font-space-mono);
+@layer base {
+/* ───────────────────────── base ───────────────────────── */
+html { background: var(--paper); color: var(--ink); -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-space-mono), ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
 }
+::selection { background: var(--signal); color: var(--ink); }
+img, video, canvas, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+h1, h2, h3, h4, p { margin: 0; }
+}
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+@layer components {
+/* ───────────────────────── type scale (use these classes) ───────────────────────── */
+.t-mega  { font-family: var(--font-monument), sans-serif; text-transform: uppercase; font-size: clamp(4rem, 17vw, 19rem); line-height: .86; letter-spacing: -0.05em; }
+.t-h1    { font-family: var(--font-monument), sans-serif; text-transform: uppercase; font-size: clamp(2.5rem, 7.2vw, 8rem); line-height: .92; letter-spacing: -0.045em; }
+.t-h2    { font-family: var(--font-monument), sans-serif; text-transform: uppercase; font-size: clamp(1.75rem, 4.2vw, 4.75rem); line-height: .95; letter-spacing: -0.04em; }
+.t-h3    { font-family: var(--font-monument), sans-serif; text-transform: uppercase; font-size: clamp(1rem, 1.7vw, 1.75rem); line-height: 1.05; letter-spacing: -0.02em; }
+.t-body  { font-family: var(--font-space-mono), monospace; font-size: clamp(.8125rem, 1vw, .9375rem); line-height: 1.7; }
+.t-lead  { font-family: var(--font-space-mono), monospace; font-size: clamp(1rem, 1.5vw, 1.375rem); line-height: 1.5; letter-spacing: -0.01em; }
+.t-label { font-family: var(--font-space-mono), monospace; font-size: .6875rem; line-height: 1.3; text-transform: uppercase; letter-spacing: .08em; }
+.t-dots  { font-family: var(--font-bitcount), monospace; font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: 0; }
+
+/* ───────────────────────── layout helpers ───────────────────────── */
+.pad-x { padding-left: var(--margin); padding-right: var(--margin); }
+.grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); }
+.hairline { border-color: color-mix(in srgb, currentColor 18%, transparent); }
+
+/* sections that sit on ink */
+.tone-noir { background: var(--ink); color: var(--paper); }
+.tone-blanc { background: var(--paper); color: var(--ink); }
+
+/* masked text lines (SplitText mask output + manual use) */
+.mask { overflow: hidden; display: block; }
+.mask > * { display: block; will-change: transform; }
+}
+
+/* custom cursor: hide the native one only on fine pointers (class added by the Cursor component) */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor, html.has-cursor * { cursor: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

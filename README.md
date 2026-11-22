@@ -1,47 +1,38 @@
-### STRUCT
+# STRUCT
 
-## Project Status: **On Hold**
+> **FORM FOLLOWS FUNCTION.** A fictional Tokyo clothing studio that builds garments like structures.
+> DROP-01 — SUIT-01 — 400 units, sold whole. A design project: the people, places and numbers are invented, the imagery is AI-generated, and the shop never takes payment.
 
-Development on STRUCT has been paused indefinitely.
+Rebuilt from scratch (the original STRUCT repo history is preserved in git).
 
-At the moment, I have no immediate plans to continue working on this project as my focus has shifted toward other learning goals and projects. While I may return to STRUCT in the future, there is currently no active roadmap or timeline for further development.
+## Run
 
-This repository remains available as a snapshot of my learning journey and the progress made while experimenting with Next.js and TypeScript.
+```bash
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build (all routes prerender statically)
+```
 
----
+## Pages
 
-## Current Tech Stack
+| Route | What it is |
+|---|---|
+| `/` | Preloader → hero → manifesto → FORM / FOLLOWS / FUNCTION → method → origin & field studies → nodes globe → drop zoom → **SUIT-01 reveal** → footer |
+| `/drop-01`, `/drop-01/[slug]` | **DROP-01** — the eight garments (OBJ.01–OBJ.08), 800 units, product cards + quick add |
+| `/suit-01`, `/suit-01/[slug]` | **SUIT-01** — the whole-body suit, sold whole (4 SKUs: men/women × noir/blanc), 400 units |
+| `/people` | The four co-founders (dot-matrix portraits that resolve to photographs), studio rules, crew, nodes |
 
-The technologies currently used in this project include:
+## Where things live
 
-* Next.js
-* TypeScript
-* GSAP
-* Lenis
-* Zustand
+- `docs/BRAND.md` — the story, the people, the nodes, the identity (colour, type, motion, voice). **Start here.**
+- `docs/ARCHITECTURE.md` — stack rules and the contracts between parts of the codebase.
+- `docs/CREDITS.md` — libraries and licences.
+- `src/data/` — all copy and product data (`brand.ts`, `products.ts`).
+- `src/lib/resolveText.ts` + `src/components/ui/SplitReveal.tsx` — the signature **RESOLVE** text reveal. Every text reveal on the site uses it.
+- `src/components/system/` — preloader, header, full-page drop-down menu, cursor, page transitions, footer.
+- `src/components/three/` — procedural 3D (hero cluster, Möbius load ribbon, object stage) and the cobe globe.
+- `public/img/` — processed photography (`manifest.json` lists sizes).
 
-## Planned Vision
+## Identity in one breath
 
-STRUCT was originally envisioned as a modern clothing e-commerce platform with a strong focus on design, storytelling, and user experience.
-
-The long-term vision included:
-
-* React Three Fiber
-* React Three Drei
-* WebGL-powered effects
-* GSAP-driven animations
-* Smooth storytelling experiences
-* Server-side rendered product pages
-* Billing and e-commerce functionality
-
-The goal was to create a visually rich and technically ambitious website that could stand alongside the level of work commonly featured on Awwwards.
-
-
-## Note:
-
-* This project is not actively maintained.
-* Features are incomplete.
-* Issues and pull requests may not receive responses.
-* The codebase may change significantly if development resumes in the future.
-
----
+Ink `#0A0A0A`, paper `#F3F4F2`, one signal colour `#FF5A00` used sparingly. Monument Extended for display, Bitcount (dot matrix) for numbers, Space Mono for everything else. Zero radius, hairlines, load lines that draw themselves.

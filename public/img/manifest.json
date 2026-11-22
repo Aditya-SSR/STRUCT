@@ -1,0 +1,152 @@
+{
+ "suit-m-black-a": {
+  "src": "Gemini_Generated_Image_2mr2062mr2062mr2.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "group-low-a": {
+  "src": "Gemini_Generated_Image_2tjic12tjic12tji.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "group-wide-a": {
+  "src": "Gemini_Generated_Image_61xwks61xwks61xw.png",
+  "w": 2400,
+  "h": 903
+ },
+ "group-wide-b": {
+  "src": "Gemini_Generated_Image_a1nmaoa1nmaoa1nm.png",
+  "w": 2400,
+  "h": 903
+ },
+ "suit-f-white": {
+  "src": "Gemini_Generated_Image_av7yzoav7yzoav7y.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "group-low-b": {
+  "src": "Gemini_Generated_Image_erlu06erlu06erlu.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "group-low-c": {
+  "src": "Gemini_Generated_Image_fm43wrfm43wrfm43.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "suit-m-white": {
+  "src": "Gemini_Generated_Image_n48njfn48njfn48n.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "suit-m-black-walk": {
+  "src": "Gemini_Generated_Image_pyc06ypyc06ypyc0.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "group-close": {
+  "src": "Gemini_Generated_Image_ud64j8ud64j8ud64.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "pair": {
+  "src": "Gemini_Generated_Image_wvd3hewvd3hewvd3.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "suit-m-black-b": {
+  "src": "Gemini_Generated_Image_ymnk7yymnk7yymnk.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "group-wide-c": {
+  "src": "Gemini_Generated_Image_ywxp18ywxp18ywxp.png",
+  "w": 1024,
+  "h": 1024
+ },
+ "study-01a": {
+  "src": "Gemini_Generated_Image_reok8rreok8rreok.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-01b": {
+  "src": "Gemini_Generated_Image_yaikoqyaikoqyaik.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-02a": {
+  "src": "product2.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-02b": {
+  "src": "product22.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-03a": {
+  "src": "product3.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-03b": {
+  "src": "product33.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-04a": {
+  "src": "product4.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-04b": {
+  "src": "product44.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-05a": {
+  "src": "product5.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-05b": {
+  "src": "product55.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-06a": {
+  "src": "product6.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-06b": {
+  "src": "product66.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-07a": {
+  "src": "product7.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-07b": {
+  "src": "product77.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "study-08a": {
+  "src": "product8.png",
+  "w": 2400,
+  "h": 1309
+ },
+ "suit-f-black": {
+  "src": "crop of pair.webp (woman in black), 2x lanczos",
+  "w": 920,
+  "h": 1976
+ },
+ "study-08b": {
+  "src": "product88.png",
+  "w": 2400,
+  "h": 1308
+ }
+}
