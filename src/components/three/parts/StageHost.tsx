@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useRef, useState, type ComponentType, type LazyExoticComponent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { hasWebGL } from "./env";
+import { isWeakDevice } from "@/lib/device";
 
 /** Props every lazy scene module receives from the host. */
 export type StageState = {
@@ -36,7 +37,8 @@ export default function StageHost<P extends object>({ Scene, sceneProps, classNa
   useEffect(() => {
     const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sm = window.matchMedia("(max-width: 767px), (pointer: coarse) and (max-width: 1024px)");
-    const read = () => setCaps({ webgl: hasWebGL(), reduced: rm.matches, small: sm.matches });
+    // a weak phone (<= 4 cores / <= 2 GB) gets the static hairline stand-in instead of a live WebGL context
+    const read = () => setCaps({ webgl: hasWebGL() && !isWeakDevice(), reduced: rm.matches, small: sm.matches });
     read();
     rm.addEventListener("change", read);
     sm.addEventListener("change", read);

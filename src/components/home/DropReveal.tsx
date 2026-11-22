@@ -41,7 +41,7 @@ export default function DropReveal() {
       const o = oRef.current;
       if (!plate || !w || !o || !line) return;
 
-      const mm = gsap.matchMedia();
+      const mm = gsap.matchMedia(plate); // scoped: callbacks run inside this context, and an unscoped one makes gsap.set() warn "Invalid scope"
       mm.add({ all: "(min-width: 0px)", motion: "(prefers-reduced-motion: no-preference)", mobile: "(max-width: 767px)" }, (ctx) => {
         const { motion, mobile } = ctx.conditions as { motion: boolean; mobile: boolean };
 

@@ -10,11 +10,34 @@
  *
  * Used by <SplitReveal/> (all site text) and callable directly: resolveSplit(el, splitTextInstance, opts).
  * The element must have been split with SplitText { type: "lines,words,chars" }.
+ *
+ * Cost model (this runs on phones): a reveal used to own two GSAP tweens PER CHARACTER (clip-path strings, parsed and
+ * re-rendered every frame). It now owns ONE driver tween per reveal that writes only the glyphs currently in
+ * transition, straight to `style.clipPath`, skipping unchanged values and (on phones) updating at ~30 Hz.
+ * Scaffold styling lives in one injected stylesheet (classes) instead of per-glyph `cssText`.
  */
 import { gsap } from "@/lib/gsap";
+import { isLite } from "@/lib/device";
 
 const GLYPHS = "0123456789+-/=#*<>:;";
 const rnd = () => GLYPHS[(Math.random() * GLYPHS.length) | 0];
+
+/** scaffold styles, injected once (per-glyph inline `cssText` was a measurable share of the split cost) */
+let styled = false;
+function ensureStyles() {
+  if (styled || typeof document === "undefined") return;
+  styled = true;
+  const st = document.createElement("style");
+  st.setAttribute("data-resolve", "");
+  st.textContent =
+    ".rs-box{display:inline-block;position:relative}" +
+    ".rs-real{display:inline-block}" +
+    ".rs-hide{clip-path:inset(100% 0% 0% 0%)}" +
+    ".rs-ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;" +
+    "font-family:var(--font-bitcount),ui-monospace,monospace;font-size:.78em;line-height:1;letter-spacing:0;text-transform:none;font-weight:400;" +
+    "opacity:0;clip-path:inset(0% 0% 0% 0%)}";
+  document.head.appendChild(st);
+}
 
 /**
  * ONE shared flicker ticker for every reveal on the page. A reveal only joins it while its timeline is actually
@@ -24,13 +47,13 @@ const rnd = () => GLYPHS[(Math.random() * GLYPHS.length) | 0];
 type Flicker = { open: { ghost: HTMLElement; locked: boolean; k: number }[] };
 const flickers = new Set<Flicker>();
 let flickLast = 0;
-const FLICK_EVERY = 0.065;
-const FLICK_BUDGET = 90; // text writes per tick, all reveals together
+let flickEvery = 0.065;
+let flickBudget = 90; // text writes per tick, all reveals together
 function flickTick(time: number) {
-  if (time - flickLast < FLICK_EVERY) return;
+  if (time - flickLast < flickEvery) return;
   flickLast = time;
-  let budget = FLICK_BUDGET;
-  const share = Math.max(8, Math.floor(FLICK_BUDGET / Math.max(flickers.size, 1)));
+  let budget = flickBudget;
+  const share = Math.max(8, Math.floor(flickBudget / Math.max(flickers.size, 1)));
   for (const f of flickers) {
     const n = Math.min(f.open.length, share, budget);
     for (let k = 0; k < n; k++) f.open[(Math.random() * f.open.length) | 0].ghost.textContent = rnd();
@@ -39,7 +62,13 @@ function flickTick(time: number) {
   }
 }
 function flickAdd(f: Flicker) {
-  if (!flickers.size) gsap.ticker.add(flickTick);
+  if (!flickers.size) {
+    // phones: fewer, rarer writes (each is a text-node swap + a layout of an absolutely positioned glyph)
+    const lite = isLite();
+    flickEvery = lite ? 0.1 : 0.065;
+    flickBudget = lite ? 28 : 90;
+    gsap.ticker.add(flickTick);
+  }
   flickers.add(f);
 }
 function flickRemove(f: Flicker) {
@@ -61,35 +90,103 @@ export type ResolveOpts = {
 
 type SplitLike = { lines: Element[]; words: Element[]; chars: Element[] };
 
+const REAL_DUR = 0.55; // real glyph wipe-up
+const GHOST_DUR = 0.45; // dot glyph wipe-away
+/** expo.out, closed form (matches gsap's "expo.out") */
+const expoOut = (p: number) => (p >= 1 ? 1 : p <= 0 ? 0 : 1 - Math.pow(2, -10 * p));
+/** percent with 0.5 resolution: below that a clip edge is sub-pixel on glyph-sized boxes, so the write is skipped */
+const q = (v: number) => Math.round(v * 200) / 200;
+
+/**
+ * Phones, long copy: no per-glyph scaffold (that is 3 elements + 2 style writes per character). Each LINE is wiped in
+ * left → right behind the same orange scan head — the RESOLVE sweep without the dot glyphs.
+ */
+function resolveLines(el: HTMLElement, lines: HTMLElement[], opts: ResolveOpts) {
+  const { delay = 0, speed = 1, head = true, scrollTrigger, paused, onComplete } = opts;
+  if (getComputedStyle(el).position === "static") el.style.position = "relative";
+  const elRect = el.getBoundingClientRect();
+  const measured = lines.map((l) => l.getBoundingClientRect());
+  const heads: HTMLElement[] = [];
+  let done = false;
+  const cleanup = () => {
+    if (done) return;
+    done = true;
+    heads.forEach((h) => h.remove());
+    lines.forEach((l) => (l.style.clipPath = ""));
+  };
+  const tl = gsap.timeline({
+    delay,
+    paused: paused ?? !!scrollTrigger,
+    scrollTrigger,
+    onComplete: () => {
+      cleanup();
+      onComplete?.();
+    },
+  });
+  lines.forEach((line, i) => {
+    const r = measured[i];
+    const start = (0.2 + i * 0.12) / speed;
+    const dur = 0.7 / speed;
+    line.style.clipPath = "inset(0% 100% 0% 0%)";
+    tl.to(line, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: "power3.out" }, start);
+    if (head) {
+      const h = document.createElement("div");
+      h.setAttribute("aria-hidden", "true");
+      h.style.cssText =
+        `position:absolute;left:0;top:${r.top - elRect.top}px;width:2px;height:${r.height}px;` +
+        "background:var(--signal);opacity:0;pointer-events:none;z-index:2;will-change:transform;";
+      el.append(h);
+      heads.push(h);
+      tl.fromTo(h, { x: r.left - elRect.left, opacity: 1 }, { x: r.right - elRect.left, duration: dur, ease: "power3.out" }, start);
+      tl.to(h, { opacity: 0, duration: 0.15, ease: "none" }, start + dur);
+    }
+  });
+  return { tl, cleanup };
+}
+
+/** longest copy (characters) that keeps the per-glyph dot flicker on a phone; beyond it the lines are wiped in */
+const LITE_GLYPH_MAX = 160;
+
 /** Builds the RESOLVE timeline for an already-split element. Returns { tl, cleanup }. */
 export function resolveSplit(el: HTMLElement, split: SplitLike, opts: ResolveOpts = {}) {
   const { delay = 0, speed = 1, head = true, scrollTrigger, paused, onComplete } = opts;
   const chars = split.chars as HTMLElement[];
   const lines = split.lines as HTMLElement[];
+  const lite = isLite();
+  if (lite && chars.length > LITE_GLYPH_MAX) return resolveLines(el, lines, opts);
+  ensureStyles();
 
   if (getComputedStyle(el).position === "static") el.style.position = "relative";
 
   // 1 — WRITE phase: wrap every char: [real glyph][ghost dot glyph]
-  type C = { box: HTMLElement; real: HTMLElement; ghost: HTMLElement; locked: boolean; k: number };
+  type C = {
+    box: HTMLElement;
+    real: HTMLElement;
+    ghost: HTMLElement;
+    locked: boolean;
+    k: number;
+    /** when this glyph's wipe starts (timeline seconds) */
+    t: number;
+    /** when its dot glyph first appears */
+    tg: number;
+    /** last clip-path strings written (real / ghost) */
+    a: string;
+    b: string;
+  };
   const items: C[] = chars.map((box) => {
     const text = box.textContent ?? "";
     box.textContent = "";
-    box.style.display = "inline-block";
-    box.style.position = "relative";
+    box.classList.add("rs-box");
     const real = document.createElement("span");
+    real.className = "rs-real rs-hide";
     real.textContent = text;
-    real.style.display = "inline-block";
     const ghost = document.createElement("span");
+    ghost.className = "rs-ghost";
     ghost.setAttribute("aria-hidden", "true");
     ghost.textContent = rnd();
-    ghost.style.cssText =
-      "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;" +
-      "font-family:var(--font-bitcount),ui-monospace,monospace;font-size:.78em;line-height:1;letter-spacing:0;text-transform:none;font-weight:400;" +
-      "opacity:0;clip-path:inset(0% 0% 0% 0%);";
     box.append(real, ghost);
-    return { box, real, ghost, locked: false, k: 0 };
+    return { box, real, ghost, locked: false, k: 0, t: 0, tg: 0, a: "", b: "" };
   });
-  items.forEach((i) => (i.real.style.clipPath = "inset(100% 0% 0% 0%)"));
 
   // 2 — READ phase: every rect is measured in ONE pass (a single layout) before anything else is written
   const elRect = el.getBoundingClientRect();
@@ -140,13 +237,16 @@ export function resolveSplit(el: HTMLElement, split: SplitLike, opts: ResolveOpt
     }
   };
 
-  // ghosts flash into existence (unresolved matter)
-  tl.to(
-    items.map((i) => i.ghost),
-    { opacity: 1, duration: 0.05, stagger: { each: Math.min(0.5 / Math.max(items.length, 1), 0.012), from: "random" } },
-    0,
-  );
+  // ghosts flash into existence (unresolved matter): random order over the first ~0.5s
+  const each = Math.min(0.5 / Math.max(items.length, 1), 0.012);
+  const order = items.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  order.forEach((idx, rank) => (items[idx].tg = rank * each));
 
+  let total = each * items.length + 0.05;
   measured.forEach(({ lineChars, lr, rects }, li) => {
     if (!lineChars.length) return;
     // the sweep covers the actual TEXT extent of the line, not the (often wider) line box
@@ -158,7 +258,7 @@ export function resolveSplit(el: HTMLElement, split: SplitLike, opts: ResolveOpt
     }
     const extent = Math.max(x1 - x0, 1);
     const dur = gsap.utils.clamp(0.55, 1.5, 0.4 + lineChars.length * 0.016) / speed;
-    const start = 0.3 / speed + li * 0.16 / speed;
+    const start = 0.3 / speed + (li * 0.16) / speed;
 
     if (head) {
       const h = document.createElement("div");
@@ -170,24 +270,60 @@ export function resolveSplit(el: HTMLElement, split: SplitLike, opts: ResolveOpt
       heads.push(h);
       tl.fromTo(h, { x: x0 - elRect.left, opacity: 1 }, { x: x1 - elRect.left, duration: dur, ease: "none" }, start);
       tl.to(h, { opacity: 0, duration: 0.15, ease: "none" }, start + dur);
+      total = Math.max(total, start + dur + 0.15);
     }
 
     lineChars.forEach((it, k) => {
       const frac = (rects[k].left - x0) / extent;
-      const t = start + Math.max(0, Math.min(1, frac)) * dur;
-      tl.to(it.real, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.55, ease: "expo.out" }, t);
-      tl.to(it.ghost, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.45, ease: "expo.out", onStart: () => lock(it) }, t);
+      it.t = start + Math.max(0, Math.min(1, frac)) * dur;
+      total = Math.max(total, it.t + REAL_DUR);
     });
   });
+
+  // ONE driver for every glyph: the dots appear, then each glyph's real/ghost wipe runs — written only while in motion
+  const byStart = items.slice().sort((a, b) => a.t - b.t);
+  const byAppear = items.slice().sort((a, b) => a.tg - b.tg);
+  let ai = 0; // next ghost to appear
+  let si = 0; // next glyph to start its wipe
+  let active: C[] = [];
+  let lastStep = -1;
+  const minGap = lite ? 1 / 32 : 0; // phones: ~30 Hz glyph updates (the glyphs are tiny, the eye can't tell)
+  const state = { t: 0 };
+  const step = (now: number) => {
+    if (done) return;
+    if (minGap && now < total && now - lastStep < minGap) return;
+    lastStep = now;
+    while (ai < byAppear.length && byAppear[ai].tg <= now) byAppear[ai++].ghost.style.opacity = "1";
+    while (si < byStart.length && byStart[si].t <= now) {
+      const it = byStart[si++];
+      lock(it); // its dot glyph leaves the flicker pool the moment its wipe starts
+      active.push(it);
+    }
+    let w = 0;
+    for (let i = 0; i < active.length; i++) {
+      const it = active[i];
+      const pr = (now - it.t) / REAL_DUR;
+      const pg = (now - it.t) / GHOST_DUR;
+      const a = `inset(${q((1 - expoOut(pr)) * 100)}% 0% 0% 0%)`;
+      const b = `inset(0% 0% ${q(expoOut(pg) * 100)}% 0%)`;
+      if (a !== it.a) it.real.style.clipPath = it.a = a;
+      if (b !== it.b) it.ghost.style.clipPath = it.b = b;
+      if (pr < 1) active[w++] = it; // finished glyphs drop out (their last write was the final state)
+    }
+    active.length = w;
+  };
+  tl.to(state, { t: total, duration: total, ease: "none", onUpdate: () => step(state.t) }, 0);
 
   function cleanup() {
     if (done) return;
     done = true;
     flickRemove(flick);
     flick.open = [];
+    active = [];
     heads.forEach((h) => h.remove());
     items.forEach((i) => {
       i.ghost.remove();
+      i.real.classList.remove("rs-hide");
       i.real.style.clipPath = "";
     });
   }

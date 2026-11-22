@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { MathUtils, type Group, type Mesh } from "three";
 import type { StageState } from "./parts/StageHost";
@@ -16,6 +16,14 @@ function Ribbon({ reduced, small }: { reduced: boolean; small: boolean }) {
   const spinner = useRef<Mesh>(null);
   const state = useRef({ spin: 0.6, px: 0, py: 0, sv: 0, last: 0, t: 0 });
   const scale = useFit(6.6, 4.6, small ? 1.0 : 0.9);
+  // scrollY is tracked by a passive listener: reading window.scrollY inside the frame loop forces a synchronous layout
+  const sy = useRef(0);
+  useEffect(() => {
+    const on = () => (sy.current = window.scrollY);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
 
   useFrame((_, dt) => {
     const g = tilt.current;
@@ -30,7 +38,7 @@ function Ribbon({ reduced, small }: { reduced: boolean; small: boolean }) {
     const d = Math.min(dt, 0.05);
     s.t += d;
     // window scroll velocity (px/s), smoothed — Lenis drives native scroll so scrollY is the smoothed value
-    const y = window.scrollY;
+    const y = sy.current;
     if (s.t < 0.1) s.last = y;
     const v = (y - s.last) / Math.max(d, 1e-3);
     s.last = y;

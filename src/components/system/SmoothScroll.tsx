@@ -6,11 +6,14 @@ import { setLenis } from "@/lib/lenis";
 
 /**
  * Lenis smooth scroll, driven by the GSAP ticker so ScrollTrigger and Lenis share one clock.
- * Reduced motion: no Lenis at all (native scrolling, ScrollTrigger still works).
+ * Reduced motion AND touch-first devices: no Lenis at all (native scrolling, ScrollTrigger still works). On a phone the
+ * browser's own compositor-driven scroll is the smooth one; smoothing it in JS only adds latency and per-frame work.
  */
 export default function SmoothScroll() {
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    // the URL bar collapsing on a phone fires resize: don't re-measure every pin / trigger for it
+    ScrollTrigger.config({ ignoreMobileResize: true });
+    if (prefersReducedMotion() || window.matchMedia("(pointer: coarse)").matches) return;
 
     const lenis = new Lenis({
       duration: 1.15,

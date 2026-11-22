@@ -24,12 +24,18 @@ export default function Studies() {
       const el = scroller.current;
       if (!el) return;
 
-      const sync = () => {
-        const max = Math.max(1, el.scrollWidth - el.clientWidth);
-        if (bar.current) bar.current.style.transform = `scaleX(${Math.max(0.04, el.scrollLeft / max)})`;
+      // geometry is measured on resize only: reading scrollWidth / offsetWidth / computed style on every scroll event
+      // (60 Hz while a thumb flicks the strip) is wasted layout-flush work
+      let max = 1;
+      let step = 1;
+      const measure = () => {
+        max = Math.max(1, el.scrollWidth - el.clientWidth);
         const first = el.querySelector<HTMLElement>("[data-card]");
-        const step = first ? first.offsetWidth + parseFloat(getComputedStyle(el).columnGap || "0") : 1;
-        const i = Math.min(GARMENTS.length, Math.round(el.scrollLeft / step) + 1);
+        step = first ? first.offsetWidth + parseFloat(getComputedStyle(el).columnGap || "0") : 1;
+      };
+      const sync = () => {
+        if (bar.current) bar.current.style.transform = `scaleX(${Math.max(0.04, el.scrollLeft / max)})`;
+        const i =Math.min(GARMENTS.length, Math.round(el.scrollLeft / step) + 1);
         if (count.current && count.current.textContent !== pad(i)) count.current.textContent = pad(i);
       };
 
@@ -78,8 +84,15 @@ export default function Studies() {
       el.addEventListener("pointerup", up);
       el.addEventListener("pointercancel", up);
       el.addEventListener("click", click, true);
+      measure();
       sync();
+      const ro = new ResizeObserver(() => {
+        measure();
+        sync();
+      });
+      ro.observe(el);
       return () => {
+        ro.disconnect();
         el.removeEventListener("scroll", sync);
         el.removeEventListener("pointerdown", down);
         el.removeEventListener("pointermove", move);

@@ -3,6 +3,7 @@ import { useRef, type ElementType, type ReactNode } from "react";
 import { gsap, useGSAP, SplitText, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
 import { resolveSplit } from "@/lib/resolveText";
 import { enqueue } from "@/lib/workQueue";
+import { resolveMaxChars } from "@/lib/device";
 import { useUI } from "@/store/ui";
 
 type Props = {
@@ -55,7 +56,8 @@ export default function SplitReveal({
         return;
       }
 
-      const useResolve = variant === "resolve" && (el.textContent ?? "").length <= 380;
+      // phones: long copy skips per-character splitting (about 1000 fewer DOM nodes per paragraph) and uses the cheap line wipe
+      const useResolve = variant === "resolve" && (el.textContent ?? "").length <= resolveMaxChars();
       // armed: the moment to play has come · playing: the timeline has been started (a re-split then jumps to the end)
       const state: { armed: boolean; playing: boolean; tl: gsap.core.Animation | null } = { armed: false, playing: false, tl: null };
       const play = () => {

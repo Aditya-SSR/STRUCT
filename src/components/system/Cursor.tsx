@@ -110,7 +110,8 @@ export default function Cursor() {
         document.documentElement.removeEventListener("pointerenter", onEnter);
       };
     },
-    { scope: root, dependencies: [fine] },
+    // no `scope`: the cursor element does not exist until `fine` flips true after hydration, and a null scope makes GSAP warn
+    { dependencies: [fine] },
   );
 
   if (!fine) return null;

@@ -30,6 +30,30 @@ function Kick({ active, reduced }: { active: boolean; reduced: boolean }) {
 }
 
 /**
+ * Phones: the scenes are slow drifts, so they are rendered on demand at ~30 fps instead of every display frame
+ * (halves the main-thread cost of three.js + the canvas commit, invisible on a slow rotation).
+ */
+function Pace({ active, fps }: { active: boolean; fps: number }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    if (!active) return;
+    let raf = 0;
+    let last = 0;
+    const gap = 1000 / fps - 3;
+    const loop = (t: number) => {
+      raf = requestAnimationFrame(loop);
+      if (t - last >= gap) {
+        last = t;
+        invalidate();
+      }
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [active, fps, invalidate]);
+  return null;
+}
+
+/**
  * Shared R3F canvas: transparent, Khronos-neutral tone mapping (whites stay white), capped DPR, frame loop that
  * pauses when off-screen (`never`) and renders on demand under reduced motion, studio environment built in-memory.
  */
@@ -37,7 +61,7 @@ export default function Stage({ active, reduced, small, onReady, fov = 30, posit
   const camera = useMemo(() => ({ fov, position, near: 0.1, far: 120 }), [fov, position]);
   return (
     <Canvas
-      frameloop={!active ? "never" : reduced ? "demand" : "always"}
+      frameloop={!active ? "never" : reduced || small ? "demand" : "always"}
       dpr={[1, small ? 1.5 : 1.75]}
       shadows={shadows && !small ? "percentage" : false}
       gl={small ? GL_NOAA : GL_AA}
@@ -49,6 +73,7 @@ export default function Stage({ active, reduced, small, onReady, fov = 30, posit
       }}
     >
       <Kick active={active} reduced={reduced} />
+      {small && !reduced ? <Pace active={active} fps={30} /> : null}
       {env > 0 ? <StudioEnv intensity={env} /> : null}
       {children}
     </Canvas>
